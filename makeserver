@@ -1,0 +1,18 @@
+CC		 = gcc
+EXEC	 = tcpserver
+CFLAGS = -g -Wall 
+OBJ 	 = server.o wrappers.o
+
+
+$(EXEC) : $(OBJ)
+	$(CC) $(OBJ) -o $(EXEC) 
+
+server.o : server.c wrappers.h
+	$(CC) $(CFLAGS) server.c -c
+
+wrappers.o : wrappers.c wrappers.h
+	$(CC) $(CFLAGS) wrappers.c -c
+
+
+clean:
+	rm -f $(EXEC) $(OBJ)

@@ -1,0 +1,18 @@
+CC		 = gcc
+EXEC	 = tcpclient
+CFLAGS = -g -Wall 
+OBJ 	 = client.o wrappers.o
+
+
+$(EXEC) : $(OBJ)
+	$(CC) $(OBJ) -o $(EXEC) 
+
+client.o : client.c wrappers.h
+	$(CC) $(CFLAGS) client.c -c
+
+wrappers.o : wrappers.c wrappers.h
+	$(CC) $(CFLAGS) wrappers.c -c
+
+
+clean:
+	rm -f $(EXEC) $(OBJ)
