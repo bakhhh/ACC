@@ -371,22 +371,21 @@ void str_cli(FILE *fp, int sockfd)
 //     return NULL;
 // }
 
-void *thread_func(void *arg) {
-    Thread *threadArgs = (Thread *)arg;
-    // int *count = *(threadArgs->clients);
-    int connfd = *(threadArgs->connfd);
-    free(threadArgs);
+// void thread_func(void *arg) {
+//     Thread *threadArgs = (Thread *)arg;
+//     // int *count = *(threadArgs->clients);
+//     int connfd = *(threadArgs->connfd);
+//     // free(threadArgs);
+//     // int connfd = *(int *)(arg);
 
-    while (*threadArgs->clients > 0){
-    
-        str_echo(connfd); // Handle communication with the client
-        close(connfd);
-        (*threadArgs->clients) --;
-    
-    }
+//     str_echo(connfd); // Handle communication with the client
+//     close(connfd);
 
-    return NULL;
-}
+//     *(threadArgs->exit) = 1;
+
+//     free(threadArgs->connfd);
+//     free(threadArgs);
+// }
 
 // void create_threads(void * arg){
 //     threadArgs * threadArg = arg;

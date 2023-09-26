@@ -21,11 +21,15 @@
 
 typedef struct threadArgs{
     pthread_t tid;
-    int *clients;
+    int *exit;
+    int maxClients;
+    int *client;
     int *connfd;
 
 
 }Thread;
+
+
 
 
 int Socket();
@@ -42,4 +46,4 @@ void Writen(int fd, void *ptr, size_t nbytes);
 void str_echo(int sockfd);
 void str_cli(FILE *fp, int sockfd);
 
-void *thread_func(void *arg);
+void thread_func(void *arg);
