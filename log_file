@@ -1,0 +1,19 @@
+Request: 
+Reply: Invalid input
+
+Request: INFO
+Reply: INFO
+
+Request: ADD(10,10)
+Reply: 20
+
+Request: D
+Reply: Invalid input
+
+Request: MUL(10,10)
+Reply: 100
+
+Request: DIV(100,10)
+Reply: 10
+
+Request: 

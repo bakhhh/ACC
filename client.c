@@ -1,45 +1,93 @@
 #include "wrappers.h"
 
+pthread_mutex_t client_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t client_cond = PTHREAD_COND_INITIALIZER;
+
 
 
 int main(int argc, char **argv)
 {
-	int	sockfd;
-	struct sockaddr_in	servaddr, cli_addr;
-    socklen_t clilen;
+	int	sockfd,sockfd_request,sockfd_reply;
+	struct sockaddr_in	servaddr_request,servaddr_reply, cli_addr;
+	socklen_t		clilen, servlen;
 
 
-	if (argc != 2) {
-		printf("usage: ./tcpclient <IPaddress>");
+	if (argc != 3) {
+		printf("usage: ./tcpclient <IPaddress> <port>");
 		return 1;
 	}
 
-    sockfd = Socket();
+    sockfd_request = Socket();
+	sockfd_reply =Socket();
+	int port = atoi(argv[2]);
+
+	int port_number;
+
+
 
     //server addr
-	bzero(&servaddr, sizeof(servaddr));
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_port   = htons(SERV_TCP_PORT);	
+	bzero(&servaddr_request, sizeof(servaddr_request));
+	servaddr_request.sin_family = AF_INET;
+	servaddr_request.sin_port   = htons(port);	
 
-    //client
-	bzero(&cli_addr, sizeof(cli_addr));
-	cli_addr.sin_family = AF_INET;
-	cli_addr.sin_port   = htons(SERV_TCP_PORT+1);	
+	if (inet_pton(AF_INET, argv[1], &servaddr_request.sin_addr) <= 0){
+	printf("inet_pton error for %s", argv[1]);
+	return 1;
+}
 
-	bind(sockfd, (SA*)&cli_addr,sizeof(cli_addr));
+
+
+
+	
+	
 
 
 
     //Bind(sockfd,(SA *) &cli_addr,sizeof(cli_addr)); //bind the client address to the socket
 
+	pthread_mutex_lock(&client_mutex);
+	Connect(sockfd_request,(SA*)&servaddr_request,sizeof(servaddr_request)); // Connect using request socket
+	//pthread_mutex_unlock(&client_mutex);
 
 
-    Connect(sockfd,(SA*)&servaddr,sizeof(servaddr)); //connect to the server
 
-	PeerName(sockfd,(SA*)&servaddr,sizeof(servaddr),&servaddr);
-	SockName(sockfd,(SA*)&cli_addr,sizeof(cli_addr),&cli_addr);
+
+	PeerName(sockfd_request,(SA*)&servaddr_request,sizeof(servaddr_request),&servaddr_request);
+	SockName(sockfd_request,(SA*)&cli_addr,sizeof(cli_addr),&cli_addr);
+
+	recv(sockfd_request, &port_number, sizeof(port_number), 0);
+	pthread_mutex_unlock(&client_mutex);
+
+
+
+	int yes =1;
+
+	if(setsockopt (sockfd_reply, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+		perror("setsockopt failed");
+		exit (1);
+	}
+
 		
-	str_cli(stdin, sockfd);
+	//Set up server address for reply socket
+	bzero(&servaddr_reply, sizeof(servaddr_reply));
+	servaddr_reply.sin_family = AF_INET;
+	servaddr_reply.sin_port   = htons(port_number);	
+
+    //client
+	bzero(&cli_addr, sizeof(cli_addr));
+	cli_addr.sin_family = AF_INET;
+	cli_addr.sin_port   = htons(50007);	
+
+
+
+	bind(sockfd_reply, (SA*)&cli_addr,sizeof(cli_addr));
+	// Connect using the request socket
+	Connect(sockfd_reply,(SA*)&servaddr_reply,sizeof(servaddr_reply)); 
+
+	PeerName(sockfd_reply,(SA*)&servaddr_reply,sizeof(servaddr_reply),&servaddr_reply);
+	SockName(sockfd_reply,(SA*)&cli_addr,sizeof(cli_addr),&cli_addr);
+
+	str_cli(stdin, sockfd_request,sockfd_reply);
 
 
 

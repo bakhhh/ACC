@@ -49,7 +49,7 @@ int Accept(int listenfd, const struct sockaddr * sa, socklen_t *len){
 void Connect(int sockfd, const struct sockaddr * sa, socklen_t len){
 
 	if (connect(sockfd, sa, len) < 0) {
-		printf("connect error");
+		fprintf(stderr, "connect error: %s\n", strerror(errno));
 		exit (1);
 	}
     }
@@ -271,48 +271,157 @@ void calculate(char * line){
 
 
 }
+//prac4
+int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+{
+	int	n;
 
-void str_echo(int sockfd) {
-    ssize_t n;
-    char line[MAXLINE];
+	if ( (n = select(nfds, readfds, writefds, exceptfds, timeout)) < 0){
+		    perror("select error");
+            exit(EXIT_FAILURE);
+    }
+	return(n);		
+}
 
-    for (;;) {
-        if ((n = Readline(sockfd, line, MAXLINE)) == 0)
-            return; /* connection closed by other end */
-        
-        if (strncmp(line, "INFO", 4) == 0){
-            INFO(line);
-        }
-        else if (strncmp(line, "QUIT", 4) == 0){
-            printf("Thank you for using SFC. Goodbye!\n");
-            printf("Client Quitting...\n");
-
-            return;
-        }
-        else{
-            calculate(line);
-
-        }
- 
-        n = strlen(line);
-        Writen(sockfd, line, n);
+int max(int a, int b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
     }
 }
 
 
-void str_cli(FILE *fp, int sockfd)
+
+
+void str_echo(int sockfd_request,int sockfd_reply,int time) {
+    ssize_t n;
+    char line[MAXLINE];
+    fd_set rset;
+    struct timeval timeout;
+    int maxfd = max(sockfd_request,sockfd_reply) +1;
+
+    for (;;) {
+        FD_ZERO(&rset);
+        FD_SET(sockfd_request, &rset);
+
+        timeout.tv_sec = time;
+
+        int ready = Select(maxfd, &rset, NULL, NULL, &timeout);
+
+        if (ready == 0) {
+            printf("Server: Timeout reached. Sending 'goodbye' message and terminating...\n");
+            return;
+        }
+
+        if (FD_ISSET(sockfd_request, &rset)) {
+            if ((n = Readline(sockfd_request, line, MAXLINE)) == 0)
+                return; /* connection closed by other end */
+
+            if (strncmp(line, "INFO", 4) == 0){
+                INFO(line);
+            }
+            else if (strncmp(line, "QUIT", 4) == 0){
+                printf("Thank you for using SFC. Goodbye!\n");
+                printf("Client Quitting...\n");
+
+                return;
+            }
+            else {
+                calculate(line);
+            }
+
+            n = strlen(line);
+            Writen(sockfd_reply, line, n);
+        }
+    }
+}
+
+
+// void str_echo(int sockfd_request,int sockfd_reply,int time) {
+//     ssize_t n;
+//     char line[MAXLINE];
+//     int times = time;
+
+//     for (;;) {
+//         if ((n = Readline(sockfd_request, line, MAXLINE)) == 0)
+//             return; /* connection closed by other end */
+        
+//         if (strncmp(line, "INFO", 4) == 0){
+//             INFO(line);
+//         }
+//         else if (strncmp(line, "QUIT", 4) == 0){
+//             printf("Thank you for using SFC. Goodbye!\n");
+//             printf("Client Quitting...\n");
+
+//             return;
+//         }
+//         else{
+//             calculate(line);
+
+//         }
+ 
+//         n = strlen(line);
+//         Writen(sockfd_reply, line, n);
+//     }
+// }
+
+
+
+// void str_echo(int sockfd) {
+//     ssize_t n;
+//     char line[MAXLINE];
+
+//     for (;;) {
+//         if ((n = Readline(sockfd, line, MAXLINE)) == 0)
+//             return; /* connection closed by other end */
+        
+//         if (strncmp(line, "INFO", 4) == 0){
+//             INFO(line);
+//         }
+//         else if (strncmp(line, "QUIT", 4) == 0){
+//             printf("Thank you for using SFC. Goodbye!\n");
+//             printf("Client Quitting...\n");
+
+//             return;
+//         }
+//         else{
+//             calculate(line);
+
+//         }
+ 
+//         n = strlen(line);
+//         Writen(sockfd, line, n);
+//     }
+// }
+
+void resetLog(char *filename) // resets the log file every time i run the program because it was annoying constantly manually deleting it
+{
+    FILE *logFp = fopen(filename, "w");
+    if (logFp == NULL) {
+        printf("Error");
+    }
+    fclose(logFp);
+}
+
+
+void str_cli(FILE *fp, int sockfd_request, int sockfd_reply)
 {
     char sendline[MAXLINE], recvline[MAXLINE];
+    resetLog("log_file");
+    FILE *log_file = fopen("log_file", "a"); 
 
     printf("\nClient: Type your message to server + Return or Control+C to terminate --> ");
     while ((void *) fgets(sendline, MAXLINE, fp) != NULL) {
+        fprintf(log_file, "Request: %s", sendline);
 
-        Writen(sockfd, sendline, strlen(sendline));
+        Writen(sockfd_request, sendline, strlen(sendline));
 
-        if (Readline(sockfd, recvline, MAXLINE) == 0) {
+        if (Readline(sockfd_reply, recvline, MAXLINE) == 0) {
             fprintf(stderr, "str_cli: server terminated prematurely\n");
             exit(EXIT_FAILURE); 
         }
+        fprintf(log_file, "Reply: %s\n", recvline);
 
         printf("\nClient: Echo from Server --> ");
         fputs(recvline, stdout);

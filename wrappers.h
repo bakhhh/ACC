@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <pthread.h>
+#include <sys/select.h>
+#include <sys/time.h>
 
 
 
@@ -21,10 +23,13 @@
 
 typedef struct threadArgs{
     pthread_t tid;
-    int *exit;
+    int timer;
     int maxClients;
     int *client;
-    int *connfd;
+    int *connfd_request;
+    int *connfd_reply;
+    int *listenfd_reply;
+    int port;
 
 
 }Thread;
@@ -43,7 +48,7 @@ void thread_function(void* arg);
 void create_threads(void * arg);
 ssize_t Readline(int fd, void *ptr, size_t maxlen);
 void Writen(int fd, void *ptr, size_t nbytes);
-void str_echo(int sockfd);
-void str_cli(FILE *fp, int sockfd);
+void str_echo(int sockfd_request,int sockfd_reply,int time);
+void str_cli(FILE *fp, int sockfd_request, int sockfd_reply);
 
 void thread_func(void *arg);
