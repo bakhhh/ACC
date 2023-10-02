@@ -39,91 +39,163 @@ void thread_func(void *arg) {
 }
 
 
+// void thread_reply(void *arg)
+// {
+// 	struct sockaddr_in	servaddr, cliaddr;
+// 	socklen_t		clilen;
+// 	Thread *thread = (Thread *)arg;
+	
+// 	int listenfd_reply;
+// 	int connfd_reply;
+// 	int connfd_request =thread->connfd_request;
+// 	int yes =1;
+// 	listenfd_reply = Socket();
+
+// 	if(setsockopt (listenfd_reply, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+// 	perror("setsockopt failed");
+// 	exit (1);
+// }
+// 	int maxClients= thread->maxClients;
+// 	int timeout = thread->timer;
+// 	int * clients= thread->client;
+// 	int i;
+	
+
+// 	bzero(&servaddr, sizeof(servaddr)); 
+// 	servaddr.sin_family      = AF_INET;
+// 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+// 	servaddr.sin_port        = htons(thread->port); /* daytime server */
+
+//     Bind(listenfd_reply, (SA*)&servaddr,sizeof(servaddr));
+//     Listen(listenfd_reply,LISTENQ);
+
+
+
+// 	for ( ; ; ) {
+// 		connfd_reply = Accept(listenfd_reply,(SA*)&cliaddr,&clilen);
+// 		str_echo(connfd_request,connfd_reply,timeout);
+// 		close(connfd_request);
+// 		close(connfd_reply);
+// 		//exit(0);
+
+
+// 		// for (i = 0; i < maxClients; i++) {
+// 		// 				if (clients[i] < 0) {
+// 		// 					clients[i] = connfd_reply; /* save descriptor */
+// 		// 					break;
+// 		// 				}
+// 		// 			}
+// 		// 		//pthread_mutex_unlock(&client_mutex); // Unlock the mutex after modifying the array
+
+
+// 		// 		if (i==maxClients){
+
+// 		// 			close(connfd_reply);
+// 		// 			printf("too many clients\n");
+// 		// 		}
+// 		// 		else{
+// 		// 				Thread *threadArgs = (Thread *)malloc(sizeof(Thread));
+// 		// 				int *connfd_arg_reply = (int *)malloc(sizeof(int));
+// 		// 				int *connfd_arg_request = (int *)malloc(sizeof(int));
+// 		// 				*connfd_arg_reply = connfd_reply;
+// 		// 				*connfd_arg_request = connfd_request;
+// 		// 				threadArgs->connfd_reply = connfd_arg_reply;
+// 		// 				threadArgs->connfd_request=connfd_request;
+// 		// 				threadArgs->maxClients = maxClients;
+// 		// 				threadArgs->client = clients;
+// 		// 				threadArgs->timer = timeout;
+						
+// 		// 				// pthread_mutex_lock(&client_mutex); // Lock the mutex before modifying the array
+
+
+// 		// 				pthread_create(&threadArgs->tid, NULL, (void*)thread_func, (void *)threadArgs);
+// 		// 				pthread_detach(threadArgs->tid);
+
+// 		// 				//pthread_cond_wait(&client_cond,&client_mutex);
+
+// 		// 				// pthread_mutex_unlock(&client_mutex); // Unlock the mutex after modifying the array
+
+// 		// 		}
+
+// 		// close(connfd_reply);
+// 		// close(connfd_request);
+
+// 	free(thread);
+
+
+// }
+// }
+
+
 void thread_reply(void *arg)
 {
-	struct sockaddr_in	servaddr, cliaddr;
-	socklen_t		clilen;
-	Thread *thread = (Thread *)arg;
-	
-	int listenfd_reply;
-	int connfd_reply;
-	int connfd_request =thread->connfd_request;
-	int yes =1;
-	listenfd_reply = Socket();
 
-	if(setsockopt (listenfd_reply, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+	struct sockaddr_in	servaddr_reply, cli_addr;
+
+	Thread *thread = (Thread *)arg;
+
+	int port = thread->port;
+
+	int sockfd_reply = Socket();
+	int connfd_reply;
+
+	bzero(&servaddr_reply, sizeof(servaddr_reply));
+	servaddr_reply.sin_family = AF_INET;
+	servaddr_reply.sin_port   = htons(50007);
+
+	bzero(&cli_addr, sizeof(cli_addr));
+	cli_addr.sin_family = AF_INET;
+	cli_addr.sin_port   = htons(SERV_TCP_PORT+1);
+	int yes =1;	
+
+	if(setsockopt (sockfd_reply, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
 	perror("setsockopt failed");
 	exit (1);
 }
-	int maxClients= thread->maxClients;
-	int timeout = thread->timer;
-	int * clients= thread->client;
-	int i;
-	
-
-	bzero(&servaddr, sizeof(servaddr)); 
-	servaddr.sin_family      = AF_INET;
-	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port        = htons(thread->port); /* daytime server */
-
-    Bind(listenfd_reply, (SA*)&servaddr,sizeof(servaddr));
-    Listen(listenfd_reply,LISTENQ);
 
 
+	Bind(sockfd_reply, (SA*)&cli_addr,sizeof(cli_addr));
 
-	for ( ; ; ) {
-		connfd_reply = Accept(listenfd_reply,(SA*)&cliaddr,&clilen);
-		str_echo(connfd_request,connfd_reply,timeout);
-		close(connfd_request);
-		close(connfd_reply);
-		//exit(0);
+	Connect(sockfd_reply,(SA*)&servaddr_reply,sizeof(servaddr_reply));
+	PeerName(sockfd_reply,(SA*)&servaddr_reply,sizeof(servaddr_reply),&servaddr_reply);
+	SockName(sockfd_reply,(SA*)&cli_addr,sizeof(cli_addr),&cli_addr);
 
 
-		// for (i = 0; i < maxClients; i++) {
-		// 				if (clients[i] < 0) {
-		// 					clients[i] = connfd_reply; /* save descriptor */
-		// 					break;
-		// 				}
-		// 			}
-		// 		//pthread_mutex_unlock(&client_mutex); // Unlock the mutex after modifying the array
+	// int num =20;
+	// int num2;
+	// //printf("before connfd req\n");
+
+	//Readline(sockfd_reply,&num2,sizeof(num2));
+	//printf("Number from client %d\n",num2);
+
+	int connfd_request = thread->connfd_request;
+
+	//printf("connfd req %d\n",connfd_request);
 
 
-		// 		if (i==maxClients){
-
-		// 			close(connfd_reply);
-		// 			printf("too many clients\n");
-		// 		}
-		// 		else{
-		// 				Thread *threadArgs = (Thread *)malloc(sizeof(Thread));
-		// 				int *connfd_arg_reply = (int *)malloc(sizeof(int));
-		// 				int *connfd_arg_request = (int *)malloc(sizeof(int));
-		// 				*connfd_arg_reply = connfd_reply;
-		// 				*connfd_arg_request = connfd_request;
-		// 				threadArgs->connfd_reply = connfd_arg_reply;
-		// 				threadArgs->connfd_request=connfd_request;
-		// 				threadArgs->maxClients = maxClients;
-		// 				threadArgs->client = clients;
-		// 				threadArgs->timer = timeout;
-						
-		// 				// pthread_mutex_lock(&client_mutex); // Lock the mutex before modifying the array
 
 
-		// 				pthread_create(&threadArgs->tid, NULL, (void*)thread_func, (void *)threadArgs);
-		// 				pthread_detach(threadArgs->tid);
-
-		// 				//pthread_cond_wait(&client_cond,&client_mutex);
-
-		// 				// pthread_mutex_unlock(&client_mutex); // Unlock the mutex after modifying the array
-
-		// 		}
-
-		// close(connfd_reply);
-		// close(connfd_request);
-
-	free(thread);
+	//Writen(sockfd_reply,&num,sizeof(num));
+	//Readline(sockfd_reply,&num2,sizeof(num2));
+	//printf("Number from client %d\n",num2);
 
 
-}
+
+
+	// send(connfd_request, &sockfd_reply, sizeof(sockfd_reply),0);
+
+	// //send(sockfd_reply, &num, sizeof(num), 0);
+
+	// recv(connfd_request, &connfd_reply, sizeof(connfd_reply), 0);
+
+
+	str_echo(connfd_request,sockfd_reply,thread->timer); // Handle communication with the client
+	printf("server Quitting...\n");
+    close(connfd_request);
+	close(connfd_reply);
+   	free(thread);
+
+
 }
 
 int main(int argc, char **argv)
@@ -169,11 +241,21 @@ int main(int argc, char **argv)
 
 
 	for ( ; ; ) {
-		pthread_mutex_lock(&client_mutex);
+		//pthread_mutex_lock(&client_mutex);
 		connfd_request = Accept(listenfd_request,(SA*)&cliaddr,&clilen);
-		int port_number =(SERV_TCP_PORT +1);
-		send(connfd_request, &port_number, sizeof(port_number), 0);
-		pthread_mutex_unlock(&client_mutex);
+		
+		int port_number;
+
+		// int num =69;
+
+		//Writen(connfd_request,&connfd_request,sizeof(connfd_request));
+
+		// send(connfd_request, &num, sizeof(num), 0);
+
+
+		//recv(connfd_request, &port_number, sizeof(port_number), 0);
+
+		//pthread_mutex_unlock(&client_mutex);
 		//close(connfd_request);
 
 		Thread *threadArgs= (Thread *)malloc(sizeof(Thread));

@@ -201,6 +201,8 @@ int MOD(int x, int y){
     return result;
 }
 
+
+
 void INFO(char * line){
     FILE *fp;
     fp = fopen("info.txt","r");
@@ -209,22 +211,16 @@ void INFO(char * line){
         return;
     }
 
-    char buffer[MAXLINE]; // This is a buffer to store the read data
-    char buffer2[MAXLINE]; // This is a buffer to store the read data
-   // buffer2[0] = '\0'; // Initialize buffer2 with an empty string
+    char buffer[MAXLINE]; 
+    char buffer2[MAXLINE]; 
+    buffer2[0] = '\0'; // Initialize buffer2 with an empty string
 
 
     while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        printf("%s",buffer);
-      //  strcat(buffer2,buffer);
-
-        //snprintf(line, MAXLINE, "%s\n", buffer);
-
-
+        strcat(buffer2,buffer);
     }
-    //snprintf(line, MAXLINE, "%s\n", buffer2);
-
-
+   snprintf(line, MAXLINE, "%s\n", buffer2);
+   
 
     fclose(fp); // Close the file
 }
@@ -239,39 +235,49 @@ void calculate(char * line){
     if (sscanf(line, "%s", line) == 1 && strncmp(line, "ADD(", 4) == 0) {
         if (sscanf(line, "ADD(%ld,%ld)", &arg1, &arg2) == 2) {
             result = ADD(arg1,arg2);
+            snprintf(line, sizeof(line), "%ld\n", result);
 
         }
     }
     else if (sscanf(line, "%s", line) == 1 && strncmp(line, "MUL(", 4) == 0) {
         if (sscanf(line, "MUL(%ld,%ld)", &arg1, &arg2) == 2) {
             result = MUL(arg1,arg2);
+            snprintf(line, sizeof(line), "%ld\n", result);
 
         }
     }
     else if (sscanf(line, "%s", line) == 1 && strncmp(line, "DIV(", 4) == 0) {
         if (sscanf(line, "DIV(%ld,%ld)", &arg1, &arg2) == 2) {
             result = DIV(arg1,arg2);
+            snprintf(line, sizeof(line), "%ld\n", result);
 
         }
     }
     else if (sscanf(line, "%s", line) == 1 && strncmp(line, "MOD(", 4) == 0) {
         if (sscanf(line, "MOD(%ld,%ld)", &arg1, &arg2) == 2) {
             result = MOD(arg1,arg2);
+            snprintf(line, sizeof(line), "%ld\n", result);
 
         }
 
     }
+    else if (strncmp(line, "INFO", 4) == 0){
+                INFO(line);
+
+                
+            }
     else {
         snprintf(line, MAXLINE, "Invalid input\n");
         return;
     }
-    snprintf(line, sizeof(line), "%ld\n", result);
+    
 
 
 
 
 }
 //prac4
+
 int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
 {
 	int	n;
@@ -292,6 +298,7 @@ int max(int a, int b) {
 }
 
 
+int quit_flag;
 
 
 void str_echo(int sockfd_request,int sockfd_reply,int time) {
@@ -306,6 +313,7 @@ void str_echo(int sockfd_request,int sockfd_reply,int time) {
         FD_SET(sockfd_request, &rset);
 
         timeout.tv_sec = time;
+        timeout.tv_usec = 0;
 
         int ready = Select(maxfd, &rset, NULL, NULL, &timeout);
 
@@ -318,13 +326,14 @@ void str_echo(int sockfd_request,int sockfd_reply,int time) {
             if ((n = Readline(sockfd_request, line, MAXLINE)) == 0)
                 return; /* connection closed by other end */
 
-            if (strncmp(line, "INFO", 4) == 0){
-                INFO(line);
-            }
-            else if (strncmp(line, "QUIT", 4) == 0){
-                printf("Thank you for using SFC. Goodbye!\n");
-                printf("Client Quitting...\n");
+            // if (strncmp(line, "INFO", 4) == 0){
+            //     INFO(line);
 
+                
+            // }
+            if (strncmp(line, "QUIT", 4) == 0){
+                printf("Thank you for using SFC. Goodbye!\n");
+                
                 return;
             }
             else {
@@ -402,8 +411,42 @@ void resetLog(char *filename) // resets the log file every time i run the progra
         printf("Error");
     }
     fclose(logFp);
+
 }
 
+// void str_cli(FILE *fp, int sockfd_request, int sockfd_reply)
+// {
+//     char sendline[MAXLINE], recvline[MAXLINE];
+//     resetLog("log_file");
+//     FILE *log_file = fopen("log_file", "a"); 
+
+//     printf("\nClient: Type your message to server + Return or Control+C to terminate --> ");
+//     while (fgets(sendline, MAXLINE, fp) != NULL) {
+//         fprintf(log_file, "Request: %s", sendline);
+
+//         Writen(sockfd_request, sendline, strlen(sendline));
+
+//         if (Readline(sockfd_reply, recvline, MAXLINE) == 0) {
+//             fprintf(stderr, "str_cli: server terminated prematurely\n");
+//             exit(EXIT_FAILURE); 
+//         }
+//         fprintf(log_file, "Reply: %s\n", recvline);
+
+//         printf("\nClient: Echo from Server --> ");
+
+//         for (int i = 0; recvline[i] != '\0'; i++) {
+//             if (recvline[i] == '|') {
+//                 printf("\n");
+//             } else {
+//                 putchar(recvline[i]);
+//             }
+//         }
+
+//         printf("\nClient: Type your message to server + Return or Control+C to terminate --> ");
+//     }
+
+//     fclose(log_file);
+// }
 
 void str_cli(FILE *fp, int sockfd_request, int sockfd_reply)
 {
@@ -411,23 +454,71 @@ void str_cli(FILE *fp, int sockfd_request, int sockfd_reply)
     resetLog("log_file");
     FILE *log_file = fopen("log_file", "a"); 
 
+
     printf("\nClient: Type your message to server + Return or Control+C to terminate --> ");
-    while ((void *) fgets(sendline, MAXLINE, fp) != NULL) {
+    while (fgets(sendline, MAXLINE, fp) != NULL) {
         fprintf(log_file, "Request: %s", sendline);
 
+
         Writen(sockfd_request, sendline, strlen(sendline));
+
+        if (strcmp(sendline, "QUIT\n") == 0) {
+            // printf("strcli exit\n");
+            return;
+        }
 
         if (Readline(sockfd_reply, recvline, MAXLINE) == 0) {
             fprintf(stderr, "str_cli: server terminated prematurely\n");
             exit(EXIT_FAILURE); 
         }
+    
         fprintf(log_file, "Reply: %s\n", recvline);
 
+
+
         printf("\nClient: Echo from Server --> ");
-        fputs(recvline, stdout);
+
+        char *token = strtok(recvline, "|");
+        while (token != NULL) {
+            fputs(token, stdout);
+            printf("\n"); // Add a newline after each segment
+            token = strtok(NULL, "|");
+        }
+
+   
         printf("\nClient: Type your message to server + Return or Control+C to terminate --> ");
     }
+
+
+    fclose(log_file); // Close the log file when finished
 }
+
+
+
+// void str_cli(FILE *fp, int sockfd_request, int sockfd_reply)
+// {
+//     char sendline[MAXLINE], recvline[MAXLINE];
+//     resetLog("log_file");
+//     FILE *log_file = fopen("log_file", "a"); 
+
+//     printf("\nClient: Type your message to server + Return or Control+C to terminate --> ");
+//     while ((void *) fgets(sendline, MAXLINE, fp) != NULL) {
+//         fprintf(log_file, "Request: %s", sendline);
+
+//         Writen(sockfd_request, sendline, strlen(sendline));
+
+//         if (Readline(sockfd_reply, recvline, MAXLINE) == 0) {
+//             fprintf(stderr, "str_cli: server terminated prematurely\n");
+//             exit(EXIT_FAILURE); 
+//         }
+//         fprintf(log_file, "Reply: %s\n", recvline);
+
+//         printf("\nClient: Echo from Server --> ");
+//         // fflush(stdout);
+//         fputs(recvline, stdout);
+//         printf("\nClient: Type your message to server + Return or Control+C to terminate --> ");
+//     }
+// }
 
 
 
