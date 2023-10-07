@@ -1,7 +1,0 @@
-Request: 
-Reply: Invalid input
-
-Request: ADD(10,10))
-Reply: 20
-
-Request: QUIT

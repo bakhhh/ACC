@@ -39,8 +39,8 @@ void thread_reply(void *arg)
 
 	Connect(sockfd_reply, (SA *)&servaddr_reply, sizeof(servaddr_reply));
 
-	PeerName(sockfd_reply, (SA *)&servaddr_reply, sizeof(servaddr_reply), &servaddr_reply);
-	SockName(sockfd_reply, (SA *)&cli_addr, sizeof(cli_addr), &cli_addr);
+	PeerName(sockfd_reply, (SA *)&servaddr_reply, sizeof(servaddr_reply), &servaddr_reply,"\nClient reply line connection on %s, port %d\n");
+	SockName(sockfd_reply, (SA *)&cli_addr, sizeof(cli_addr), &cli_addr,"\nServer connecting to client reply Line from %s, port %d\n");
 
 	int connfd_request = thread->connfd_request;
 

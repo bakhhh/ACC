@@ -61,6 +61,10 @@ void calculate(char *line)
             result = ADD(arg1, arg2);
             snprintf(line, sizeof(line), "%ld\n", result);
         }
+        else{
+            snprintf(line, MAXLINE, "Invalid input\n");
+
+        }
     }
     else if (sscanf(line, "%s", line) == 1 && strncmp(line, "MUL(", 4) == 0)
     {
@@ -68,6 +72,10 @@ void calculate(char *line)
         {
             result = MUL(arg1, arg2);
             snprintf(line, sizeof(line), "%ld\n", result);
+        }
+        else{
+            snprintf(line, MAXLINE, "Invalid input\n");
+
         }
     }
     else if (sscanf(line, "%s", line) == 1 && strncmp(line, "DIV(", 4) == 0)
@@ -77,6 +85,10 @@ void calculate(char *line)
             result = DIV(arg1, arg2);
             snprintf(line, sizeof(line), "%ld\n", result);
         }
+        else{
+            snprintf(line, MAXLINE, "Invalid input\n");
+
+        }
     }
     else if (sscanf(line, "%s", line) == 1 && strncmp(line, "MOD(", 4) == 0)
     {
@@ -84,6 +96,10 @@ void calculate(char *line)
         {
             result = MOD(arg1, arg2);
             snprintf(line, sizeof(line), "%ld\n", result);
+        }
+        else{
+            snprintf(line, MAXLINE, "Invalid input\n");
+
         }
     }
     else if (strncmp(line, "INFO", 4) == 0)

@@ -38,8 +38,8 @@ void Bind(int fd, const struct sockaddr * sa, socklen_t len);
 void Listen(int listenfd, int backlog);
 int Accept(int listenfd, const struct sockaddr * sa, socklen_t *len);
 void Connect(int sockfd, const struct sockaddr * sa, socklen_t len);
-void SockName(int fd, const struct sockaddr * sa, socklen_t len, struct sockaddr_in	* addr);
-void PeerName(int fd, const struct sockaddr * sa, socklen_t len, struct sockaddr_in	* addr);
+void SockName(int fd, const struct sockaddr * sa, socklen_t len, struct sockaddr_in	* addr,const char *message);
+void PeerName(int fd, const struct sockaddr * sa, socklen_t len, struct sockaddr_in	* addr,const char *message);
 int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 
 

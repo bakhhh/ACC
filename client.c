@@ -50,8 +50,8 @@ int main(int argc, char **argv)
 
 	Connect(sockfd_request, (SA *)&servaddr_request, sizeof(servaddr_request)); // Connect using request socket
 
-	PeerName(sockfd_request, (SA *)&servaddr_request, sizeof(servaddr_request), &servaddr_request);
-	SockName(sockfd_request, (SA *)&cli_addr, sizeof(cli_addr), &cli_addr);
+	PeerName(sockfd_request, (SA *)&servaddr_request, sizeof(servaddr_request), &servaddr_request,"\nRequest line server on %s, port %d\n");
+	SockName(sockfd_request, (SA *)&cli_addr, sizeof(cli_addr), &cli_addr,"\nClient connecting to request Line from %s, port %d\n");
 
 	
 	int listenfd_reply = Socket();
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 
 	FD_ZERO(&readfds);
 	FD_SET(sockfd_request, &readfds);
-	int ready = select(sockfd_request + 1, &readfds, NULL, NULL, &timeout);
+	int ready = Select(sockfd_request + 1, &readfds, NULL, NULL, &timeout);
 
 	if (ready == 0)
 	{

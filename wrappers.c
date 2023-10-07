@@ -55,7 +55,7 @@ void Connect(int sockfd, const struct sockaddr *sa, socklen_t len)
     }
 }
 
-void SockName(int fd, const struct sockaddr *sa, socklen_t len, struct sockaddr_in *addr)
+void SockName(int fd, const struct sockaddr *sa, socklen_t len, struct sockaddr_in *addr,const char *message)
 {
     char buff[MAXLINE];
 
@@ -67,11 +67,11 @@ void SockName(int fd, const struct sockaddr *sa, socklen_t len, struct sockaddr_
     else
     {
         inet_ntop(AF_INET, &addr->sin_addr, buff, sizeof(buff));
-        printf("\nClient Connection from %s, port %d\n", buff, ntohs(addr->sin_port));
+        printf(message, buff, ntohs(addr->sin_port));
     }
 }
 
-void PeerName(int fd, const struct sockaddr *sa, socklen_t len, struct sockaddr_in *addr)
+void PeerName(int fd, const struct sockaddr *sa, socklen_t len, struct sockaddr_in *addr,const char *message)
 {
     char buff[MAXLINE];
 
@@ -83,7 +83,7 @@ void PeerName(int fd, const struct sockaddr *sa, socklen_t len, struct sockaddr_
     else
     {
         inet_ntop(AF_INET, &addr->sin_addr, buff, sizeof(buff));
-        printf("\nServer Connection from %s, port %d\n", buff, ntohs(addr->sin_port));
+        printf(message, buff, ntohs(addr->sin_port));
     }
 }
 
