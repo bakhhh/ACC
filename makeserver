@@ -1,18 +1,26 @@
 CC		 = gcc
 EXEC	 = tcpserver
 CFLAGS = -g -Wall 
-OBJ 	 = server.o wrappers.o
+OBJ 	 = server.o wrappers.o calc.o readwrite.o str_echo.o
 
 
 $(EXEC) : $(OBJ)
-	$(CC) $(OBJ) -o $(EXEC) 
+	$(CC) $(OBJ) -o $(EXEC) -pthread 
 
-server.o : server.c wrappers.h
+server.o : server.c acc.h
 	$(CC) $(CFLAGS) server.c -c
 
-wrappers.o : wrappers.c wrappers.h
+wrappers.o : wrappers.c acc.h
 	$(CC) $(CFLAGS) wrappers.c -c
 
+readwrite.o : readwrite.c acc.h
+	$(CC) $(CFLAGS) readwrite.c -c
+
+calc.o : calc.c acc.h
+	$(CC) $(CFLAGS) calc.c -c
+
+str_echo.o : str_echo.c acc.h
+	$(CC) $(CFLAGS) str_echo.c -c
 
 clean:
 	rm -f $(EXEC) $(OBJ)

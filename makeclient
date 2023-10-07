@@ -1,18 +1,23 @@
 CC		 = gcc
 EXEC	 = tcpclient
 CFLAGS = -g -Wall 
-OBJ 	 = client.o wrappers.o
+OBJ 	 = client.o wrappers.o readwrite.o str_cli.o
 
 
 $(EXEC) : $(OBJ)
-	$(CC) $(OBJ) -o $(EXEC) 
+	$(CC) $(OBJ) -o $(EXEC) -pthread 
 
-client.o : client.c wrappers.h
+client.o : client.c acc.h
 	$(CC) $(CFLAGS) client.c -c
 
-wrappers.o : wrappers.c wrappers.h
+wrappers.o : wrappers.c acc.h
 	$(CC) $(CFLAGS) wrappers.c -c
 
+readwrite.o : readwrite.c acc.h
+	$(CC) $(CFLAGS) readwrite.c -c
+
+str_cli.o : str_cli.c acc.h
+	$(CC) $(CFLAGS) str_cli.c -c
 
 clean:
 	rm -f $(EXEC) $(OBJ)
